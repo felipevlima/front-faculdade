@@ -14,7 +14,7 @@ const Header = () => {
           <Pages>
             <NavLink to="/computador">Computador</NavLink>
             <NavLink to="/celular">Celular</NavLink>
-            <NavLink to="/users">User</NavLink>
+            <NavLink to="/users">Usuário</NavLink>
           </Pages>
         </div>
       </Content>
