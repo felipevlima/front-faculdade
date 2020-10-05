@@ -19,6 +19,7 @@ module.exports = {
       'error',
       { extensions: ['.js', '.jsx', '.tsx', '.ts'] },
     ],
+    'no-use-before-define': 'off',
     'import/extensions': 'off',
     'import/prefer-default-export': 'off',
     'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
