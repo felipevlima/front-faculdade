@@ -14,7 +14,7 @@ import {
 import { Edit, Delete } from '@material-ui/icons';
 import api from '../../services/api';
 import Section from '../../components/Section/Section';
-import { AddUserDiv, UserForm, ZeroResults } from './Users.styles';
+import { AddUserDiv, UserForm, NotFoundText } from './Users.styles';
 
 interface UserInterface {
   _id: string;
@@ -164,7 +164,7 @@ const Users: React.FC = () => {
           </Table>
         </TableContainer>
       ) : (
-        <ZeroResults>Nenhum usuario encontrado! :(</ZeroResults>
+        <NotFoundText>Nenhum usuario encontrado! :(</NotFoundText>
       )}
     </Section>
   );

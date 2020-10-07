@@ -18,7 +18,7 @@ export const UserForm = styled.form`
   background: #fafafa;
 `;
 
-export const ZeroResults = styled.div`
+export const NotFoundText = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
