@@ -17,3 +17,13 @@ export const UserForm = styled.form`
   grid-column-gap: 25px;
   background: #fafafa;
 `;
+
+export const ZeroResults = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 70vh;
+
+  color: #333;
+  font-size: 1.6rem;
+`;

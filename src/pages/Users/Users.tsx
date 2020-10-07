@@ -14,7 +14,7 @@ import {
 import { Edit, Delete } from '@material-ui/icons';
 import api from '../../services/api';
 import Section from '../../components/Section/Section';
-import { AddUserDiv, UserForm } from './Users.styles';
+import { AddUserDiv, UserForm, ZeroResults } from './Users.styles';
 
 interface UserInterface {
   _id: string;
@@ -121,45 +121,51 @@ const Users: React.FC = () => {
           </Button>
         </UserForm>
       </Collapse>
-
-      <TableContainer>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Nome</TableCell>
-              <TableCell>E-mail</TableCell>
-              <TableCell>Celular</TableCell>
-              <TableCell>Idade</TableCell>
-              <TableCell>CEP</TableCell>
-              <TableCell>Opções</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {users.map((user: UserInterface) => (
-              <TableRow key={user._id}>
-                <TableCell component="th" scope="row">
-                  {user.name}
-                </TableCell>
-                <TableCell align="left">{user.email}</TableCell>
-                <TableCell align="left">{user.cellphone}</TableCell>
-                <TableCell align="left">{user.age}</TableCell>
-                <TableCell align="left">{user.cep}</TableCell>
-                <TableCell align="left">
-                  <Button color="primary" onClick={() => updateUser(user._id)}>
-                    <Edit />
-                  </Button>
-                  <Button
-                    color="secondary"
-                    onClick={() => deleteUser(user._id)}
-                  >
-                    <Delete />
-                  </Button>
-                </TableCell>
+      {users.length > 0 ? (
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Nome</TableCell>
+                <TableCell>E-mail</TableCell>
+                <TableCell>Celular</TableCell>
+                <TableCell>Idade</TableCell>
+                <TableCell>CEP</TableCell>
+                <TableCell>Opções</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+            <TableBody>
+              {users.map((user: UserInterface) => (
+                <TableRow key={user._id}>
+                  <TableCell component="th" scope="row">
+                    {user.name}
+                  </TableCell>
+                  <TableCell align="left">{user.email}</TableCell>
+                  <TableCell align="left">{user.cellphone}</TableCell>
+                  <TableCell align="left">{user.age}</TableCell>
+                  <TableCell align="left">{user.cep}</TableCell>
+                  <TableCell align="left">
+                    <Button
+                      color="primary"
+                      onClick={() => updateUser(user._id)}
+                    >
+                      <Edit />
+                    </Button>
+                    <Button
+                      color="secondary"
+                      onClick={() => deleteUser(user._id)}
+                    >
+                      <Delete />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      ) : (
+        <ZeroResults>Nenhum usuario encontrado! :(</ZeroResults>
+      )}
     </Section>
   );
 };
