@@ -15,15 +15,7 @@ import { Edit, Delete } from '@material-ui/icons';
 import api from '../../services/api';
 import Section from '../../components/Section/Section';
 import { AddUserDiv, UserForm, NotFoundText } from './Users.styles';
-
-interface UserInterface {
-  _id: string;
-  name: string;
-  email: string;
-  age: string;
-  cellphone: string;
-  cep: string;
-}
+import { UserInterface } from './Users.types';
 
 const Users: React.FC = () => {
   const [expanded, setExpanded] = useState(false);
@@ -164,7 +156,7 @@ const Users: React.FC = () => {
           </Table>
         </TableContainer>
       ) : (
-        <NotFoundText>Nenhum usuario encontrado! :(</NotFoundText>
+        <NotFoundText>Nenhum usuario encontrado! :( </NotFoundText>
       )}
     </Section>
   );
