@@ -68,9 +68,10 @@ const Computer: React.FC = () => {
   }
 
   useEffect(() => {
-    api.get('/computers').then((response) => {
-      setComputers(response.data);
-    });
+    (async () => {
+      const { data } = await api.get('/computers');
+      return setComputers(data);
+    })();
   }, []);
 
   return (
