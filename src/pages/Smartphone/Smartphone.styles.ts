@@ -6,7 +6,7 @@ export const Form = styled.form`
   grid-template-rows: repeat(2);
   grid-row-gap: 10px;
   grid-column-gap: 25px;
-  background: #F2F2F2;
+  background: #f2f2f2;
   padding: 2.5%;
   border-radius: 10px;
 `;
@@ -16,7 +16,7 @@ export const Title = styled.h1`
   text-align: center;
   margin-bottom: 30px;
   border-bottom-color: #000;
-  border-bottom-width: 1; 
+  border-bottom-width: 1;
   border-bottom-style: solid;
   padding-bottom: 5px;
   margin: 0 100px;

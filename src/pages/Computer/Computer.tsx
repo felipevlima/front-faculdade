@@ -10,8 +10,10 @@ import {
   TableRow,
   Button,
   TextField,
+  Snackbar,
 } from '@material-ui/core';
 import { Edit, Delete } from '@material-ui/icons';
+import MuiAlert from '@material-ui/lab/Alert';
 import Section from '../../components/Section/Section';
 import { EmptyList, ComputerForm, AddBox } from './Computer.styles';
 import api from '../../services/api';
@@ -25,10 +27,15 @@ interface ComputerTypes {
   processor: string;
 }
 
+const Alert = (props: any) => {
+  return <MuiAlert elevation={6} variant="filled" {...props} />;
+};
+
 const Computer: React.FC = () => {
   const { handleSubmit, register, setValue } = useForm();
   const [computers, setComputers] = useState<ComputerTypes[]>([]);
   const [opened, setOpened] = useState(false);
+  const [open, setOpen] = useState(false);
 
   async function handleAdd(formFields: any) {
     await api
@@ -38,8 +45,8 @@ const Computer: React.FC = () => {
         setComputers([...computers, newComputer]);
         setOpened(false);
       })
-      .catch((err) => {
-        throw new Error(err);
+      .catch(() => {
+        setOpen(!open);
       });
   }
 
@@ -52,8 +59,8 @@ const Computer: React.FC = () => {
         );
         setComputers(newComputers);
       })
-      .catch((err) => {
-        throw new Error(err);
+      .catch(() => {
+        setOpen(!open);
       });
   }
 
@@ -67,6 +74,10 @@ const Computer: React.FC = () => {
     setValue('processor', uComputer?.processor);
   }
 
+  const handleClose = () => {
+    setOpen(!open);
+  };
+
   useEffect(() => {
     (async () => {
       const { data } = await api.get('/computers');
@@ -76,6 +87,17 @@ const Computer: React.FC = () => {
 
   return (
     <Section>
+      <Snackbar
+        open={open}
+        autoHideDuration={6000}
+        onClose={handleClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left',
+        }}
+      >
+        <Alert severity="error">Erro!</Alert>
+      </Snackbar>
       <AddBox>
         <Button
           onClick={() => setOpened(!opened)}
@@ -133,6 +155,7 @@ const Computer: React.FC = () => {
                 <TableCell>Graphic Card</TableCell>
                 <TableCell>Memory</TableCell>
                 <TableCell>Processor</TableCell>
+                <TableCell>Options</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>

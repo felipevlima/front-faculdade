@@ -10,13 +10,15 @@ import {
   TableHead,
   TableRow,
   TextField,
+  Snackbar,
 } from '@material-ui/core';
+import MuiAlert from '@material-ui/lab/Alert';
 import { Edit, Delete } from '@material-ui/icons';
 import Section from '../../components/Section/Section';
 import { Form, Title, ButtonDiv, NotFoundText } from './Smartphone.styles';
 import api from '../../services/api';
 
-export interface SmartphoneInterface{
+export interface SmartphoneInterface {
   _id: string;
   name: string;
   so: string;
@@ -27,21 +29,29 @@ export interface SmartphoneInterface{
   memory: number;
 }
 
-const Smartphone: React.FC = () => {
+const Alert = (props: any) => {
+  return <MuiAlert elevation={6} variant="filled" {...props} />;
+};
 
+const Smartphone: React.FC = () => {
   const [visible, setVisible] = useState(false);
   const [smarts, setSmarts] = useState<SmartphoneInterface[]>([]);
   const { handleSubmit, register, setValue } = useForm();
+  const [open, setOpen] = useState(false);
 
   const deleteSmart = async (id: string) => {
-    await api.delete(`/smartphone/${id}`).then(()=>{
-      const results = smarts.filter((smartphone: SmartphoneInterface) => smartphone._id !== id);
+    await api
+      .delete(`/smartphone/${id}`)
+      .then(() => {
+        const results = smarts.filter(
+          (smartphone: SmartphoneInterface) => smartphone._id !== id
+        );
 
-      setSmarts(results);
-    })
-    .catch((err) => {
-      throw new Error(err);
-    });
+        setSmarts(results);
+      })
+      .catch(() => {
+        setOpen(!open);
+      });
   };
 
   const updateSmart = async (id: string) => {
@@ -56,9 +66,11 @@ const Smartphone: React.FC = () => {
     setValue('memory', findSmartphone?.memory);
   };
 
-  const onSubmit = async (formFields: any) => {
-    console.log(formFields);
+  const handleClose = () => {
+    setOpen(!open);
+  };
 
+  const onSubmit = async (formFields: any) => {
     await api
       .post('/smartphone', formFields)
       .then((response) => {
@@ -66,24 +78,33 @@ const Smartphone: React.FC = () => {
         setSmarts([...smarts, result]);
         setVisible(false);
       })
-      .catch((e) => {
-        alert('Erro ao cadastrar smartphone');
+      .catch(() => {
+        setOpen(!open);
         setVisible(false);
-        console.log(e);
       });
   };
 
-  useEffect(()=>{
-    async function loadSmartphones(){
-      const {data} = await api.get('/smartphone');
+  useEffect(() => {
+    async function loadSmartphones() {
+      const { data } = await api.get('/smartphone');
       return setSmarts(data);
-    };
-
+    }
     loadSmartphones();
-  },[]);
-  
+  }, []);
+
   return (
     <Section>
+      <Snackbar
+        open={open}
+        autoHideDuration={6000}
+        onClose={handleClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left',
+        }}
+      >
+        <Alert severity="error">Erro!</Alert>
+      </Snackbar>
       <Title>Lista de Smartphones</Title>
 
       <Collapse in={visible} timeout="auto" unmountOnExit>
@@ -152,13 +173,12 @@ const Smartphone: React.FC = () => {
               variant="outlined"
               color="primary"
               onClick={() => setVisible(false)}
-              style={{ maxWidth: 300,  margin: 5  }}
+              style={{ maxWidth: 300, margin: 5 }}
             >
               Voltar
             </Button>
           </ButtonDiv>
         </Form>
-
       </Collapse>
 
       {smarts.length > 0 ? (
@@ -180,13 +200,17 @@ const Smartphone: React.FC = () => {
             <TableBody>
               {smarts.map((smartphone: SmartphoneInterface) => (
                 <TableRow key={smartphone._id}>
-                  <TableCell component="th" scope="row" >{smartphone.name}</TableCell>
-                  <TableCell align="left" >{smartphone.so}</TableCell>
-                  <TableCell align="left" >{smartphone.processor}</TableCell>
-                  <TableCell align="left" >{smartphone.screen} Polegadas</TableCell>
-                  <TableCell align="left" >{smartphone.mark}</TableCell>
-                  <TableCell align="left" >{smartphone.memoryRam} GB</TableCell>
-                  <TableCell align="left" >{smartphone.memory} GB</TableCell>
+                  <TableCell component="th" scope="row">
+                    {smartphone.name}
+                  </TableCell>
+                  <TableCell align="left">{smartphone.so}</TableCell>
+                  <TableCell align="left">{smartphone.processor}</TableCell>
+                  <TableCell align="left">
+                    {smartphone.screen} Polegadas
+                  </TableCell>
+                  <TableCell align="left">{smartphone.mark}</TableCell>
+                  <TableCell align="left">{smartphone.memoryRam} GB</TableCell>
+                  <TableCell align="left">{smartphone.memory} GB</TableCell>
                   <TableCell align="center">
                     <Button
                       color="primary"
@@ -218,7 +242,6 @@ const Smartphone: React.FC = () => {
       >
         Adicionar Smartphone
       </Button>
-
     </Section>
   );
 };
