@@ -1,24 +1,71 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-
+import { useForm } from 'react-hook-form';
 import {
+  Collapse,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   Button,
-  /* FormControl,
-  FormControlLabel,
-  FormLabel,
-  InputLabel,
-  Radio,
-  RadioGroup,
-  Select,
-  TextField, */
+  TextField,
 } from '@material-ui/core';
-
+import { Edit, Delete } from '@material-ui/icons';
 import Section from '../../components/Section/Section';
-import { Container, Name } from './Computer.styles';
+import { EmptyList, ComputerForm, AddBox } from './Computer.styles';
 import api from '../../services/api';
 
-const Computer = () => {
-  const [computers, setComputers] = useState<any[]>([]);
+interface ComputerTypes {
+  _id: string;
+  model: string;
+  ram: number;
+  graphicCard: string;
+  memory: string;
+  processor: string;
+}
+
+const Computer: React.FC = () => {
+  const { handleSubmit, register, setValue } = useForm();
+  const [computers, setComputers] = useState<ComputerTypes[]>([]);
+  const [opened, setOpened] = useState(false);
+
+  async function handleAdd(formFields: any) {
+    await api
+      .post('/computers', formFields)
+      .then((response) => {
+        const newComputer = response.data;
+        setComputers([...computers, newComputer]);
+        setOpened(false);
+      })
+      .catch((err) => {
+        throw new Error(err);
+      });
+  }
+
+  async function handleDelete(id: string) {
+    await api
+      .delete(`/computers/${id}`)
+      .then(() => {
+        const newComputers = computers.filter(
+          (computer: ComputerTypes) => computer._id !== id
+        );
+        setComputers(newComputers);
+      })
+      .catch((err) => {
+        throw new Error(err);
+      });
+  }
+
+  async function handleUpdate(id: string) {
+    setOpened(true);
+    const uComputer = await computers.find((computer) => computer._id === id);
+    setValue('model', uComputer?.model);
+    setValue('ram', uComputer?.ram);
+    setValue('graphicCard', uComputer?.graphicCard);
+    setValue('memory', uComputer?.memory);
+    setValue('processor', uComputer?.processor);
+  }
 
   useEffect(() => {
     api.get('/computers').then((response) => {
@@ -26,24 +73,99 @@ const Computer = () => {
     });
   }, []);
 
-  function handleAddComputer() {
-    console.log('funcao');
-  }
-
   return (
     <Section>
-      <Name>Computer List</Name>
+      <AddBox>
+        <Button
+          onClick={() => setOpened(!opened)}
+          variant="contained"
+          color="primary"
+        >
+          Add Computer
+        </Button>
+      </AddBox>
+      <Collapse in={opened} timeout="auto" unmountOnExit>
+        <ComputerForm onSubmit={handleSubmit(handleAdd)}>
+          <TextField
+            name="model"
+            label="Model"
+            variant="outlined"
+            inputRef={register}
+          />
+          <TextField
+            name="ram"
+            label="Ram"
+            variant="outlined"
+            inputRef={register}
+          />
+          <TextField
+            name="graphicCard"
+            label="Graphic Card"
+            variant="outlined"
+            inputRef={register}
+          />
+          <TextField
+            name="memory"
+            label="Memory"
+            variant="outlined"
+            inputRef={register}
+          />
+          <TextField
+            name="processor"
+            label="Processor"
+            variant="outlined"
+            inputRef={register}
+          />
+          <Button type="submit" variant="contained" color="primary">
+            Do it!
+          </Button>
+        </ComputerForm>
+      </Collapse>
 
-      <Button onClick={handleAddComputer}>Add computer</Button>
-
-      <Container>
-        {computers.map((computer) => (
-          <>
-            <div>{computer.model}</div>
-            <div>{computer.processor}</div>
-          </>
-        ))}
-      </Container>
+      {computers.length > 0 ? (
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Model</TableCell>
+                <TableCell>Ram</TableCell>
+                <TableCell>Graphic Card</TableCell>
+                <TableCell>Memory</TableCell>
+                <TableCell>Processor</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {computers.map((computer: ComputerTypes) => (
+                <TableRow key={computer._id}>
+                  <TableCell component="th" scope="row">
+                    {computer.model}
+                  </TableCell>
+                  <TableCell align="left">{computer.ram}</TableCell>
+                  <TableCell align="left">{computer.graphicCard}</TableCell>
+                  <TableCell align="left">{computer.memory}</TableCell>
+                  <TableCell align="left">{computer.processor}</TableCell>
+                  <TableCell align="left">
+                    <Button
+                      color="primary"
+                      onClick={() => handleUpdate(computer._id)}
+                    >
+                      <Edit />
+                    </Button>
+                    <Button
+                      color="secondary"
+                      onClick={() => handleDelete(computer._id)}
+                    >
+                      <Delete />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      ) : (
+        <EmptyList>Nothing here ...</EmptyList>
+      )}
     </Section>
   );
 };
