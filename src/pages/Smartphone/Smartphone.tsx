@@ -1,149 +1,224 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import {
   Button,
-  FormControl,
-  FormControlLabel,
-  FormLabel,
-  InputLabel,
-  Radio,
-  RadioGroup,
-  Select,
+  Collapse,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   TextField,
 } from '@material-ui/core';
+import { Edit, Delete } from '@material-ui/icons';
 import Section from '../../components/Section/Section';
-import { Form, Title } from './Smartphone.styles';
+import { Form, Title, ButtonDiv, NotFoundText } from './Smartphone.styles';
+import api from '../../services/api';
 
-// import { Container } from './styles';
+export interface SmartphoneInterface{
+  _id: string;
+  name: string;
+  so: string;
+  processor: string;
+  screen: number;
+  mark: string;
+  memoryRam: number;
+  memory: number;
+}
 
 const Smartphone: React.FC = () => {
+
+  const [visible, setVisible] = useState(false);
+  const [smarts, setSmarts] = useState<SmartphoneInterface[]>([]);
+  const { handleSubmit, register, setValue } = useForm();
+
+  const deleteSmart = async (id: string) => {
+    await api.delete(`/smartphone/${id}`).then(()=>{
+      const results = smarts.filter((smartphone: SmartphoneInterface) => smartphone._id !== id);
+
+      setSmarts(results);
+    })
+    .catch((err) => {
+      throw new Error(err);
+    });
+  };
+
+  const updateSmart = async (id: string) => {
+    setVisible(true);
+    const findSmartphone = await smarts.find((smart) => smart._id === id);
+    setValue('name', findSmartphone?.name);
+    setValue('so', findSmartphone?.so);
+    setValue('processor', findSmartphone?.processor);
+    setValue('screen', findSmartphone?.screen);
+    setValue('mark', findSmartphone?.mark);
+    setValue('memoryRam', findSmartphone?.memoryRam);
+    setValue('memory', findSmartphone?.memory);
+  };
+
+  const onSubmit = async (formFields: any) => {
+    console.log(formFields);
+
+    await api
+      .post('/smartphone', formFields)
+      .then((response) => {
+        const result = response.data;
+        setSmarts([...smarts, result]);
+        setVisible(false);
+      })
+      .catch((e) => {
+        alert('Erro ao cadastrar smartphone');
+        setVisible(false);
+        console.log(e);
+      });
+  };
+
+  useEffect(()=>{
+    async function loadSmartphones(){
+      const {data} = await api.get('/smartphone');
+      return setSmarts(data);
+    };
+
+    loadSmartphones();
+  },[]);
+  
   return (
     <Section>
       <Title>Lista de Smartphones</Title>
-      <Form>
-        <TextField
-          id="name"
-          label="Nome"
-          variant="outlined"
-          fullWidth
-          style={{ marginBottom: 20 }}
-        />
 
-        <FormControl
-          component="fieldset"
-          fullWidth
-          style={{ marginBottom: 15 }}
-        >
-          <FormLabel component="legend">Sistema Operacional</FormLabel>
-          <RadioGroup aria-label="so" name="so" row>
-            <FormControlLabel
-              value="Android"
-              control={<Radio color="primary" />}
-              label="Android"
-            />
-            <FormControlLabel
-              value="IOS"
-              control={<Radio color="primary" />}
-              label="IOS"
-            />
-            <FormControlLabel
-              value="Windows Phone"
-              control={<Radio color="primary" />}
-              label="Windows Phone"
-            />
-          </RadioGroup>
-        </FormControl>
+      <Collapse in={visible} timeout="auto" unmountOnExit>
+        <Form onSubmit={handleSubmit(onSubmit)}>
+          <TextField
+            name="name"
+            label="Nome"
+            variant="outlined"
+            inputRef={register}
+          />
+          <TextField
+            name="so"
+            label="Sistema Operacional"
+            variant="outlined"
+            inputRef={register}
+          />
 
-        <TextField
-          id="process"
-          label="Processador"
-          variant="outlined"
-          fullWidth
-          style={{ marginBottom: 20 }}
-        />
+          <TextField
+            name="processor"
+            label="Processador"
+            variant="outlined"
+            inputRef={register}
+          />
 
-        <TextField
-          id="screen"
-          label="Tela"
-          variant="outlined"
-          fullWidth
-          style={{ marginBottom: 20 }}
-        />
-        <FormControl
-          component="fieldset"
-          fullWidth
-          style={{ marginBottom: 15 }}
-        >
-          <FormLabel component="legend">Memória RAM</FormLabel>
-          <RadioGroup aria-label="memoryRam" name="gender1" row>
-            <FormControlLabel
-              value="2"
-              control={<Radio color="primary" />}
-              label="2GB"
-            />
-            <FormControlLabel
-              value="3"
-              control={<Radio color="primary" />}
-              label="3GB"
-            />
-            <FormControlLabel
-              value="4"
-              control={<Radio color="primary" />}
-              label="4GB"
-            />
-            <FormControlLabel
-              value="6"
-              control={<Radio color="primary" />}
-              label="6GB"
-            />
-            <FormControlLabel
-              value="8"
-              control={<Radio color="primary" />}
-              label="8GB"
-            />
-          </RadioGroup>
-        </FormControl>
+          <TextField
+            name="screen"
+            label="Tela"
+            variant="outlined"
+            inputRef={register}
+          />
 
-        <FormControl variant="outlined" fullWidth style={{ marginBottom: 20 }}>
-          <InputLabel htmlFor="memory">Memória</InputLabel>
-          <Select
-            native
+          <TextField
+            name="mark"
+            label="Marca"
+            variant="outlined"
+            inputRef={register}
+          />
+
+          <TextField
+            name="memoryRam"
+            label="Memória RAM"
+            variant="outlined"
+            type="number"
+            inputRef={register}
+          />
+
+          <TextField
+            name="memory"
             label="Memória"
-            inputProps={{
-              name: 'memory',
-              id: 'memory',
-            }}
-          >
-            <option aria-label="None" value="" />
-            <option value={8}>8GB</option>
-            <option value={16}>16GB</option>
-            <option value={32}>32GB</option>
-            <option value={64}>64GB</option>
-            <option value={128}>128GB</option>
-            <option value={25}>256GB</option>
-          </Select>
-        </FormControl>
+            variant="outlined"
+            type="number"
+            inputRef={register}
+          />
 
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => {
-            alert('Pressed');
-          }}
-          style={{ marginRight: 5 }}
-        >
-          Cadastrar
-        </Button>
-        <Button
-          variant="outlined"
-          color="primary"
-          onClick={() => {
-            alert('Pressed');
-          }}
-          style={{ marginLeft: 5 }}
-        >
-          Voltar
-        </Button>
-      </Form>
+          <ButtonDiv>
+            <Button
+              variant="contained"
+              color="primary"
+              type="submit"
+              style={{ maxWidth: 300, margin: 5 }}
+            >
+              Cadastrar
+            </Button>
+
+            <Button
+              variant="outlined"
+              color="primary"
+              onClick={() => setVisible(false)}
+              style={{ maxWidth: 300,  margin: 5  }}
+            >
+              Voltar
+            </Button>
+          </ButtonDiv>
+        </Form>
+
+      </Collapse>
+
+      {smarts.length > 0 ? (
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Nome</TableCell>
+                <TableCell>Sistema Operacional</TableCell>
+                <TableCell>Processador</TableCell>
+                <TableCell>Tela</TableCell>
+                <TableCell>Marca</TableCell>
+                <TableCell>Memória RAM</TableCell>
+                <TableCell>Memória</TableCell>
+                <TableCell align="center">Edit | Remove</TableCell>
+              </TableRow>
+            </TableHead>
+
+            <TableBody>
+              {smarts.map((smartphone: SmartphoneInterface) => (
+                <TableRow key={smartphone._id}>
+                  <TableCell component="th" scope="row" >{smartphone.name}</TableCell>
+                  <TableCell align="left" >{smartphone.so}</TableCell>
+                  <TableCell align="left" >{smartphone.processor}</TableCell>
+                  <TableCell align="left" >{smartphone.screen} Polegadas</TableCell>
+                  <TableCell align="left" >{smartphone.mark}</TableCell>
+                  <TableCell align="left" >{smartphone.memoryRam} GB</TableCell>
+                  <TableCell align="left" >{smartphone.memory} GB</TableCell>
+                  <TableCell align="center">
+                    <Button
+                      color="primary"
+                      onClick={() => updateSmart(smartphone._id)}
+                    >
+                      <Edit />
+                    </Button>
+                    <Button
+                      color="secondary"
+                      onClick={() => deleteSmart(smartphone._id)}
+                    >
+                      <Delete />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      ) : (
+        <NotFoundText> Não há smartphones cadastrados! </NotFoundText>
+      )}
+
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={() => setVisible(!visible)}
+        style={{ margin: 5 }}
+      >
+        Adicionar Smartphone
+      </Button>
+
     </Section>
   );
 };
