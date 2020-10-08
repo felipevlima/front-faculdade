@@ -15,7 +15,7 @@ import {
 import { Edit, Delete } from '@material-ui/icons';
 import MuiAlert from '@material-ui/lab/Alert';
 import Section from '../../components/Section/Section';
-import { EmptyList, ComputerForm, AddBox } from './Computer.styles';
+import { EmptyList, ComputerForm, AddBox, Name } from './Computer.styles';
 import api from '../../services/api';
 
 interface ComputerTypes {
@@ -35,14 +35,33 @@ const Computer: React.FC = () => {
   const { handleSubmit, register, setValue } = useForm();
   const [computers, setComputers] = useState<ComputerTypes[]>([]);
   const [opened, setOpened] = useState(false);
+  const [update, setUpdate] = useState(false);
+  const [upId, setUpId] = useState('');
   const [open, setOpen] = useState(false);
 
   async function handleAdd(formFields: any) {
+    if (!update) {
+      await api
+        .post('/computers', formFields)
+        .then((response) => {
+          const newComputer = response.data;
+          setComputers([...computers, newComputer]);
+          setOpened(false);
+        })
+        .catch((err) => {
+          throw new Error(err);
+        });
+    }
+
     await api
-      .post('/computers', formFields)
+      .put(`/computers/${upId}`, formFields)
       .then((response) => {
-        const newComputer = response.data;
-        setComputers([...computers, newComputer]);
+        const upCheck = computers.filter(
+          (computer: ComputerTypes) => computer._id != upId);
+        const upComputer = response.data;
+        const updating = upCheck.concat(upComputer);
+        setComputers(updating);
+        setUpdate(false);
         setOpened(false);
       })
       .catch(() => {
@@ -72,6 +91,8 @@ const Computer: React.FC = () => {
     setValue('graphicCard', uComputer?.graphicCard);
     setValue('memory', uComputer?.memory);
     setValue('processor', uComputer?.processor);
+    setUpId(id);
+    setUpdate(true);
   }
 
   const handleClose = () => {
@@ -87,6 +108,7 @@ const Computer: React.FC = () => {
 
   return (
     <Section>
+    <Name>Computer List</Name>
       <Snackbar
         open={open}
         autoHideDuration={6000}
@@ -140,7 +162,7 @@ const Computer: React.FC = () => {
             inputRef={register}
           />
           <Button type="submit" variant="contained" color="primary">
-            Do it!
+            {!update ? 'Create' : 'Update'}
           </Button>
         </ComputerForm>
       </Collapse>
