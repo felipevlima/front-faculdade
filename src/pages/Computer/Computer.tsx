@@ -39,7 +39,7 @@ const Computer: React.FC = () => {
         .then((response) => {
           const newComputer = response.data;
           setComputers([...computers, newComputer]);
-          return setOpened(false);
+          setOpened(false);
         })
         .catch((err) => {
           throw new Error(err);
