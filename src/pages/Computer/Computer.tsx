@@ -53,7 +53,7 @@ const Computer: React.FC = () => {
       const updating = upCheck.concat(upComputer);
       setComputers(updating);
       setUpdate(false);
-      return setOpened(false);
+      setOpened(false);
     });
   }
 
