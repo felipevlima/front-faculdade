@@ -1,5 +1,10 @@
 import styled from 'styled-components';
 
+export const Name = styled.h2`
+  font-size: 25px;
+  font-style: oblique;
+`;
+
 export const AddBox = styled.div`
   display: flex;
   justify-content: flex-end;

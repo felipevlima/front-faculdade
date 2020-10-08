@@ -13,7 +13,7 @@ import {
 } from '@material-ui/core';
 import { Edit, Delete } from '@material-ui/icons';
 import Section from '../../components/Section/Section';
-import { EmptyList, ComputerForm, AddBox } from './Computer.styles';
+import { EmptyList, ComputerForm, AddBox, Name } from './Computer.styles';
 import api from '../../services/api';
 
 interface ComputerTypes {
@@ -29,18 +29,32 @@ const Computer: React.FC = () => {
   const { handleSubmit, register, setValue } = useForm();
   const [computers, setComputers] = useState<ComputerTypes[]>([]);
   const [opened, setOpened] = useState(false);
+  const [update, setUpdate] = useState(false);
+  const [upId, setUpId] = useState('');
 
   async function handleAdd(formFields: any) {
-    await api
-      .post('/computers', formFields)
-      .then((response) => {
-        const newComputer = response.data;
-        setComputers([...computers, newComputer]);
-        setOpened(false);
-      })
-      .catch((err) => {
-        throw new Error(err);
-      });
+    if (!update) {
+      await api
+        .post('/computers', formFields)
+        .then((response) => {
+          const newComputer = response.data;
+          setComputers([...computers, newComputer]);
+          return setOpened(false);
+        })
+        .catch((err) => {
+          throw new Error(err);
+        });
+    }
+
+    await api.put(`/computers/${upId}`, formFields).then((response) => {
+      const upCheck = computers.filter(
+        (computer: ComputerTypes) => computer._id != upId);
+      const upComputer = response.data;
+      const updating = upCheck.concat(upComputer);
+      setComputers(updating);
+      setUpdate(false);
+      return setOpened(false);
+    });
   }
 
   async function handleDelete(id: string) {
@@ -65,6 +79,8 @@ const Computer: React.FC = () => {
     setValue('graphicCard', uComputer?.graphicCard);
     setValue('memory', uComputer?.memory);
     setValue('processor', uComputer?.processor);
+    setUpId(id);
+    setUpdate(true);
   }
 
   useEffect(() => {
@@ -76,6 +92,7 @@ const Computer: React.FC = () => {
 
   return (
     <Section>
+    <Name>Computer List</Name>
       <AddBox>
         <Button
           onClick={() => setOpened(!opened)}
@@ -118,7 +135,7 @@ const Computer: React.FC = () => {
             inputRef={register}
           />
           <Button type="submit" variant="contained" color="primary">
-            Do it!
+            {!update ? 'Create' : 'Update'}
           </Button>
         </ComputerForm>
       </Collapse>
