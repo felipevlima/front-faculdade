@@ -46,15 +46,20 @@ const Computer: React.FC = () => {
         });
     }
 
-    await api.put(`/computers/${upId}`, formFields).then((response) => {
-      const upCheck = computers.filter(
-        (computer: ComputerTypes) => computer._id != upId);
-      const upComputer = response.data;
-      const updating = upCheck.concat(upComputer);
-      setComputers(updating);
-      setUpdate(false);
-      setOpened(false);
-    });
+    await api
+      .put(`/computers/${upId}`, formFields)
+      .then((response) => {
+        const upCheck = computers.filter(
+          (computer: ComputerTypes) => computer._id != upId);
+        const upComputer = response.data;
+        const updating = upCheck.concat(upComputer);
+        setComputers(updating);
+        setUpdate(false);
+        setOpened(false);
+      })
+      .catch((err) => {
+        throw new Error(err);
+      });
   }
 
   async function handleDelete(id: string) {
