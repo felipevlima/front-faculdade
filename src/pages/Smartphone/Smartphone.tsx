@@ -38,6 +38,9 @@ const Smartphone: React.FC = () => {
   const [smarts, setSmarts] = useState<SmartphoneInterface[]>([]);
   const { handleSubmit, register, setValue } = useForm();
   const [open, setOpen] = useState(false);
+  const [updated, setUpdated] = useState(false);
+  const [updateId, setUpdateId] = useState('');
+
 
   const deleteSmart = async (id: string) => {
     await api
@@ -64,6 +67,8 @@ const Smartphone: React.FC = () => {
     setValue('mark', findSmartphone?.mark);
     setValue('memoryRam', findSmartphone?.memoryRam);
     setValue('memory', findSmartphone?.memory);
+    setUpdateId(id);
+    setUpdated(true);
   };
 
   const handleClose = () => {
@@ -71,6 +76,23 @@ const Smartphone: React.FC = () => {
   };
 
   const onSubmit = async (formFields: any) => {
+    if(updated){
+      await api
+      .put(`/smartphone/${updateId}`, formFields)
+      .then((response) => {
+        const updateSmart = response.data;
+        const smartphoneWithoutDelete = smarts.filter(
+          (smartphone: SmartphoneInterface) => smartphone._id !== updateId
+        );
+        const newSmartsArray = smartphoneWithoutDelete.concat(updateSmart);
+        setSmarts(newSmartsArray);
+        setUpdated(false);
+        return setVisible(false);
+      })
+      .catch(() => {
+        return setOpen(!open);
+      });
+    }
     await api
       .post('/smartphone', formFields)
       .then((response) => {
@@ -99,11 +121,11 @@ const Smartphone: React.FC = () => {
         autoHideDuration={6000}
         onClose={handleClose}
         anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'left',
+          vertical: 'top',
+          horizontal: 'center',
         }}
       >
-        <Alert severity="error">Erro!</Alert>
+        <Alert severity="error">Erro ao {!updated ? 'Cadastrar Smartphone' : 'Atualizar Smartphone'}!</Alert>
       </Snackbar>
       <Title>Lista de Smartphones</Title>
 
@@ -166,7 +188,7 @@ const Smartphone: React.FC = () => {
               type="submit"
               style={{ maxWidth: 300, margin: 5 }}
             >
-              Cadastrar
+              {!updated ? 'Cadastrar' : 'Atualizar'}
             </Button>
 
             <Button
@@ -242,6 +264,15 @@ const Smartphone: React.FC = () => {
       >
         Adicionar Smartphone
       </Button>
+
+      <Button 
+        variant="outlined" 
+        color="primary" 
+        onClick={() => window.location.reload(false)}
+      >
+        Atualizar
+      </Button>
+
     </Section>
   );
 };
