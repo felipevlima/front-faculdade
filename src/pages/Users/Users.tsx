@@ -10,28 +10,54 @@ import {
   TableRow,
   Button,
   TextField,
+  Snackbar,
 } from '@material-ui/core';
+import MuiAlert from '@material-ui/lab/Alert';
 import { Edit, Delete } from '@material-ui/icons';
 import api from '../../services/api';
 import Section from '../../components/Section/Section';
 import { AddUserDiv, UserForm, NotFoundText } from './Users.styles';
 import { UserInterface } from './Users.types';
 
+const Alert = (props: any) => {
+  return <MuiAlert elevation={6} variant="filled" {...props} />;
+};
+
 const Users: React.FC = () => {
   const [expanded, setExpanded] = useState(false);
   const [users, setUsers] = useState<UserInterface[]>([]);
   const { handleSubmit, register, setValue } = useForm();
+  const [open, setOpen] = useState(false);
+  const [isUpdate, setIsUpdate] = useState(false);
+  const [updateId, setUpdateId] = useState('');
 
   const onSubmit = async (formFields: any) => {
+    if (!isUpdate) {
+      await api
+        .post('/users', formFields)
+        .then((response) => {
+          const newUser = response.data;
+          setUsers([...users, newUser]);
+          return setExpanded(false);
+        })
+        .catch(() => {
+          return setOpen(!open);
+        });
+    }
     await api
-      .post('/users', formFields)
+      .put(`/users/${updateId}`, formFields)
       .then((response) => {
-        const newUser = response.data;
-        setUsers([...users, newUser]);
-        setExpanded(false);
+        const updateUser = response.data;
+        const userWithoutDelete = users.filter(
+          (user: UserInterface) => user._id !== updateId
+        );
+        const newUsersArray = userWithoutDelete.concat(updateUser);
+        setUsers(newUsersArray);
+        setIsUpdate(false);
+        return setExpanded(false);
       })
-      .catch((e) => {
-        throw new Error(e);
+      .catch(() => {
+        return setOpen(!open);
       });
   };
 
@@ -42,8 +68,8 @@ const Users: React.FC = () => {
         const newUsers = users.filter((user: UserInterface) => user._id !== id);
         setUsers(newUsers);
       })
-      .catch((e) => {
-        throw new Error(e);
+      .catch(() => {
+        setOpen(!open);
       });
   };
 
@@ -55,6 +81,12 @@ const Users: React.FC = () => {
     setValue('cellphone', findUser?.cellphone);
     setValue('age', findUser?.age);
     setValue('cep', findUser?.cep);
+    setUpdateId(id);
+    setIsUpdate(true);
+  };
+
+  const handleClose = () => {
+    setOpen(!open);
   };
 
   useEffect(() => {
@@ -66,6 +98,17 @@ const Users: React.FC = () => {
 
   return (
     <Section>
+      <Snackbar
+        open={open}
+        autoHideDuration={6000}
+        onClose={handleClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left',
+        }}
+      >
+        <Alert severity="error">Erro!</Alert>
+      </Snackbar>
       <AddUserDiv>
         <Button
           onClick={() => setExpanded(!expanded)}
@@ -76,7 +119,7 @@ const Users: React.FC = () => {
         </Button>
       </AddUserDiv>
       <Collapse in={expanded} timeout="auto" unmountOnExit>
-        <UserForm onSubmit={handleSubmit(onSubmit)}>
+        <UserForm onSubmit={handleSubmit((data) => onSubmit(data))}>
           <TextField
             name="name"
             label="Nome"
@@ -109,7 +152,7 @@ const Users: React.FC = () => {
             inputRef={register}
           />
           <Button type="submit" variant="contained" color="primary">
-            Criar usuario
+            {!isUpdate ? 'Criar usuario' : 'Atualizar usuário'}
           </Button>
         </UserForm>
       </Collapse>
@@ -128,7 +171,7 @@ const Users: React.FC = () => {
             </TableHead>
             <TableBody>
               {users.map((user: UserInterface) => (
-                <TableRow key={user._id}>
+                <TableRow key={user.email}>
                   <TableCell component="th" scope="row">
                     {user.name}
                   </TableCell>
